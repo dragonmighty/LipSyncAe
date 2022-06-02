@@ -1,0 +1,40 @@
+body {
+    color: #B9B9B9;
+    font-size: small;
+    font-family: 'MS UI Gothic', Arial, Helvetica, sans-serif;
+}
+
+textarea{
+    width: 100%;
+    height: auto;
+}
+
+button {
+    border-color: #717171;
+    border-radius: 15px;
+    border-width: 1px;
+    text-align: center;
+    /* padding: 0.2em 1.0em; */
+    cursor: pointer;
+    background-color: #232323;
+    color: #717171;
+    margin: 0.5em;
+    min-width: 80px;
+    font-size: 0.8em;
+    border-style: solid;
+}
+
+::-webkit-file-upload-button {
+    border-color: #717171;
+    border-radius: 15px;
+    border-width: 1px;
+    text-align: center;
+    /* padding: 0.2em 1.0em; */
+    cursor: pointer;
+    background-color: #232323;
+    color: #717171;
+    margin: 0.5em;
+    min-width: 80px;
+    font-size: 0.7em;
+    border-style: solid;
+}

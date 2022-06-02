@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Add Control Layer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="onLoad()">
+    <!-- 1) Simple HTML UI elements to get us started -->
+    <fieldset id="premierepro-fieldset">
+        <legend>セリフのwavのタイミングを取得</legend>
+        <p>シーケンス上のオーディオトラックにあるクリップのファイル名や再生開始位置等を取得します。</p>
+        <label for="audio-layer">トーク音声のレイヤー:</label>
+        <select name="audio-layer" id="audio-layer">
+        </select>
+        <button id="refreshLayerList-button">音声レイヤー名の再取得</button>
+        <button id="retrieve-button">取得</button>
+        <textarea id="result-textarea" rows="10"></textarea>
+    </fieldset>
+    <fieldset id="aftereffects-fieldset">
+        <legend>リップシンクアニメーションの生成</legend>
+        <p>Windows アプリで結合したタイミング情報のjsonファイルからアニメーションのキーフレームを作成</p>
+        <label for="posterizationTime-text">タイミング情報結合後json:</label>
+        <textarea id="timing-textarea" rows="10"></textarea>
+        <fieldset>
+            <legend>オプション</legend>
+            <fieldset>
+                <legend>ポスタリゼーション時間</legend>
+                <label for="posterizationTime-checkBox">有効にする</label>
+                <input type="checkbox" id="posterizationTime-checkBox" checked="checked">
+                <br>
+                <label for="posterizationTime-text">ポスタリゼーション時間</label>
+                <input type="text" id="posterizationTime-text" maxlength="2" value="15">
+            </fieldset>
+
+        </fieldset>
+        <button id="generateKeyframe-button">キーフレーム生成</button>
+        <button id="retrieveShapeInfo-button">パス情報を取得</button>
+    </fieldset>
+
+    <!-- <fieldset>
+        <legend>1: 立ち絵インポート</legend>
+        <label for="inputfile">立ち絵ファイル:</label>
+        <input type="file" id="inputfile"> 
+    </fieldset>
+    <fieldset>       
+        <legend>2: 設定</legend>
+        <input type="text" id="character-comp" name="character-comp" value="SDさとうささら_立ち絵" readonly>
+        <button id="load-settings">既存設定読み込み</button><br>
+        <input type="checkbox" id="chk-generate-lipsync" name="chk-generate-lipsync">
+        <label for="chk-generate-lipsync">リップシンクのレイヤーを作成</label><br>
+        
+        <label for="mouth-layer">口のレイヤー:</label>
+        <select name="mouth-layer" id="mouth-layer">
+            <option value="1">口</option>
+            <option value="2">髪型</option>
+            <option value="3">目</option>
+            <option value="4">眉毛</option>
+            <option value="5">服装</option>
+            <option value="6">小物</option>
+        </select><br>
+        <label for="mouth-layer">閉じた口:</label>
+        <select name="mouth-layer" id="mouth-layer">
+            <option value="1">layer 1</option>
+            <option value="2">layer 1</option>
+            <option value="3">layer 1</option>
+            <option value="4">layer 1</option>
+            <option value="5">layer 1</option>
+            <option value="6">layer 1</option>
+        </select><br>
+        <label for="mouth-layer">開いた口:</label>
+        <select name="mouth-layer" id="mouth-layer">
+            <option value="1">layer 1</option>
+            <option value="2">layer 1</option>
+            <option value="3">layer 1</option>
+            <option value="4">layer 1</option>
+            <option value="5">layer 1</option>
+            <option value="6">layer 1</option>
+        </select>
+        <button id="addctl-button">更新</button>
+    </fieldset> -->
+
+    <!-- 2) A button -->
+    <!-- <button id="addctl-button">生成</button> -->
+
+    <p></p>
+    <br>
+    <br>
+    <br>
+    <br>
+    <button id="reload-button">Reload</button>
+
+    <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
+    <script type="text/javascript" src="CSInterface.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+</body>
+</html>
