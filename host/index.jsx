@@ -276,10 +276,15 @@ function generateKeyframefromTemplate(json){
     var lipFillColor = [0, 0, 0]/255;//[231, 165, 155]/255;
     var lipStrokeColor = [0, 0, 0]/255;
     var lipStrokeWidth = 0;
+    var previousVowel = "";
+    var currentVowel = "";
+    var nextVowel = "";
 
     var phones = ["a", "i", "u", "e", "o", "N", "sil"];
     for (var i = 1; i <= mainComp.numLayers; ++i) {
       for (var j = 0; j < phones.length; ++j) {
+
+
         if (mainComp.layers[i].name === phones[j])
         {
 
@@ -331,6 +336,7 @@ function generateKeyframefromTemplate(json){
             lipFillColor = fill.property("ADBE Vector Fill Color").value;
           }
         }
+
       }
     }
     //alert("lip_layers.length: " + lip_layers.length);
@@ -350,22 +356,123 @@ function generateKeyframefromTemplate(json){
     var shapePath = shapeGroup.addProperty("ADBE Vector Shape - Group"); // add a path
     var shapeStroke = shapeGroup.addProperty("ADBE Vector Graphic - Stroke"); // add a stroke
     var strokeIndex = shapeStroke.propertyIndex;
-    var shapeFill = shapeGroup.addProperty("ADBE Vector Graphic - Fill"); // add a stroke
+    var shapeFill = shapeGroup.addProperty("ADBE Vector Graphic - Fill"); // add a stroke\
     shapeFill.property("ADBE Vector Fill Color").setValue(lipFillColor);
     shapeGroup.property(strokeIndex).property("ADBE Vector Stroke Color").setValue(lipStrokeColor);
     shapeGroup.property(strokeIndex).property("ADBE Vector Stroke Width").setValue(lipStrokeWidth);
     
+    var firstTime = true;
+
     //alert("added");
     for (var index = 0; index < obj.phoneLabels.length; ++index)
     {
-      for (var i = 0; i < lip_layers.length; ++i)
+      //alert("index: " + index + ", lipShape: " + obj.phoneLabels[index].lipShape);
+      // Find the next vowel (phone may contain consonant sounds)
+      if (isVowel(obj.phoneLabels[index].lipShape) || isSilent(obj.phoneLabels[index].lipShape))
       {
-        //alert("index: "+ index +", "+"i: "+i + ", lip_layers[i].lipShapeName:" + lip_layers[i].lipShapeName);
-        if (lip_layers[i].lipShapeName === obj.phoneLabels[index].lipShape)
+        currentVowel = obj.phoneLabels[index].lipShape;
+      }
+      var consonantCounter = 0;
+      for (var k = index; k < obj.phoneLabels.length - 1; ++k)
+      {
+        if (isVowel(obj.phoneLabels[k + 1].lipShape) || isSilent(obj.phoneLabels[k + 1].lipShape))
         {
-          shapeGroup.property("ADBE Vector Shape - Group").property("ADBE Vector Shape").setValueAtTime(obj.phoneLabels[index].startSeconds, lip_layers[i].shape);
+          nextVowel = obj.phoneLabels[k + 1].lipShape;
           break;
         }
+        else
+        {
+          ++consonantCounter;
+          if (consonantCounter > 3)
+          {
+            nextVowel = "";
+            break;
+          }
+        }
+      }
+      
+      var originalShape = getShape(lip_layers, obj.phoneLabels[index].lipShape);
+      if (originalShape !== null)
+      {
+        //shapeGroup.property("ADBE Vector Shape - Group").property("ADBE Vector Shape").setValueAtTime(obj.phoneLabels[index].startSeconds, originalShape);
+        
+        // Found the correct shape
+        var transientShape = null;
+        if (transientShapeRequired(previousVowel, currentVowel, nextVowel))
+        {
+          var previousShape = getShape(lip_layers, previousVowel);
+          transientShape = new Shape();
+          // transientShape.vertices = new Array();
+          // transientShape.inTangents = new Array();
+          // transientShape.outTangents = new Array();
+          if (previousShape !== null)
+          {
+            // if (firstTime)
+            // {
+            //   var testArray = new Array();
+            //   testArray = [(originalShape.vertices[0][0] + previousShape.vertices[0][0]) / 2.0, (originalShape.vertices[0][1] + previousShape.vertices[0][1]) / 2.0];
+            //   alert("originalShape.vertices: " + JSON.stringify(testArray));
+            //   //alert(JSON.stringify(transientShape));
+            //   firstTime = false;
+            // }
+            // Verticies
+            var tempVertices = new Array();
+            for (var i = 0; i < originalShape.vertices.length && i < previousShape.vertices.length; ++i)
+            {
+              var tempVertex = [(originalShape.vertices[i][0] + previousShape.vertices[i][0]) / 2.0,
+              (originalShape.vertices[i][1] + previousShape.vertices[i][1]) / 2.0];
+              tempVertices.push(tempVertex);
+            }
+            // need to set vertices/inTangents/outTangents at once.
+            // pushing a element to these array does not work.
+            transientShape.vertices = tempVertices;
+            // InTangents
+            var tempInTangents = new Array();
+            for (var i = 0; i < originalShape.inTangents.length && i < previousShape.inTangents.length; ++i)
+            {
+              var tempInTangent = [(originalShape.inTangents[i][0] + previousShape.inTangents[i][0]) / 2.0,
+              (originalShape.inTangents[i][1] + previousShape.inTangents[i][1]) / 2.0];
+              tempInTangents.push(tempInTangent);
+            }
+            transientShape.inTangents = tempInTangents;
+            // OutTangents
+            var tempOutTrangents = new Array();
+            for (var i = 0; i < originalShape.outTangents.length && i < previousShape.outTangents.length; ++i)
+            {
+              var tempOutTrangent = [(originalShape.outTangents[i][0] + previousShape.outTangents[i][0]) / 2.0,
+              (originalShape.outTangents[i][1] + previousShape.outTangents[i][1]) / 2.0];
+              tempOutTrangents.push(tempOutTrangent);
+              // if (firstTime)
+              // {
+              //   // var testArray = new Array();
+              //   // testArray = [(originalShape.vertices[0][0] + previousShape.vertices[0][0]) / 2.0, (originalShape.vertices[0][1] + previousShape.vertices[0][1]) / 2.0];
+              //   // alert("originalShape.vertices: " + JSON.stringify(testArray));
+              //   alert(JSON.stringify(tempOutTrangent));
+              //   firstTime = false;
+              // }
+            }
+            transientShape.outTangents = tempOutTrangents;
+            transientShape.closed = originalShape.closed;
+            shapeGroup.property("ADBE Vector Shape - Group").property("ADBE Vector Shape").setValueAtTime(obj.phoneLabels[index].startSeconds, transientShape);
+          }
+          else
+          {
+            shapeGroup.property("ADBE Vector Shape - Group").property("ADBE Vector Shape").setValueAtTime(obj.phoneLabels[index].startSeconds, originalShape);
+          }
+        }
+        else
+        {
+          shapeGroup.property("ADBE Vector Shape - Group").property("ADBE Vector Shape").setValueAtTime(obj.phoneLabels[index].startSeconds, originalShape);
+        }
+      }
+      else
+      {
+        // do nothing. (Consonants phone comes here.)
+      }
+
+      if (isVowel(obj.phoneLabels[index].lipShape) || isSilent(obj.phoneLabels[index].lipShape))
+      {
+        previousVowel = obj.phoneLabels[index].lipShape;
       }
     }
 
@@ -384,6 +491,74 @@ function generateKeyframefromTemplate(json){
     alert("no comp");
   }
   return "done";
+}
+
+function getShape(lip_layers, lipShapeName)
+{
+  for (var i = 0; i < lip_layers.length; ++i)
+  {
+    //alert("index: "+ index +", "+"i: "+i + ", lip_layers[i].lipShapeName:" + lip_layers[i].lipShapeName);
+    if (lip_layers[i].lipShapeName === lipShapeName)
+    {
+      return lip_layers[i].shape;
+    }
+  }
+  return null;
+}
+
+function isVowel(lipShape)
+{
+  return lipShape === "a" || lipShape === "i" || lipShape === "u" ||
+          lipShape === "e" || lipShape === "o";
+}
+function isSilent(lipShape)
+{
+  return lipShape === "sil" || lipShape === "pau";
+}
+
+function transientShapeRequired(previousVowel, currentVowel, nextVowel)
+{
+  var currentLipShapeGroup = "";
+  var previousLipShapeGroup = "";
+  var nextLipShapeGroup = "";
+
+  previousLipShapeGroup = getLipShapeGroup(previousVowel);
+  currentLipShapeGroup = getLipShapeGroup(currentVowel);
+  nextLipShapeGroup = getLipShapeGroup(nextVowel);
+
+  if (nextLipShapeGroup === "close")
+  {
+    return false;
+  }
+  else if ((previousLipShapeGroup === "wide" && currentLipShapeGroup === "narrow") ||
+           (previousLipShapeGroup === "narrow" && currentLipShapeGroup === "wide"))
+  {
+    return true;
+  }
+  return false;
+}
+
+
+function getLipShapeGroup(lipShape)
+{
+  switch (lipShape)
+  {
+    case "a":
+    case "i":
+    case "e":
+       return "wide";
+      break;
+    case "u":
+    case "o":
+      return "narrow";
+      break;
+    case "sil":
+    case "pau":
+      return "close";
+      break;
+    default:
+      return "UNKNOWN";
+  }
 }
 
 function generateKeyframeFromPathData(json){
