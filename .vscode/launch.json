@@ -5,7 +5,7 @@
         "type": "extendscript-debug",
         "request": "launch",
         "name": "Run Current Script",
-        "program": "${file}",
+        "program": "${workspaceFolder}/host/index.jsx",
         "stopOnEntry": false,
         "excludes": [
           "undefined",
