@@ -89,11 +89,21 @@ function addControlLayer(){
   }
 }
 
+// ==============================================================================
+// Initialize
+// ==============================================================================
+
 function getAppName()
 {
   return BridgeTalk.appName;
 }
 
+// ==============================================================================
+// functions for Premiere Pro
+// ==============================================================================
+// =========================================================
+// retirieve track list of Audio Layers
+// =========================================================
 function retrieveTracklist()
 {
   var sequence = app.project.activeSequence;
@@ -128,6 +138,10 @@ function retrieveTracklist()
   return JSON.stringify(response);
 }
 
+// =========================================================
+// Generate Timing json file which includes the file name of
+// audio layer with timestamp.
+// =========================================================
 function retrieveTiming(audioTrackIndex){
   var sequence = app.project.activeSequence;
   if (!sequence)
@@ -210,6 +224,12 @@ function retrieveTiming(audioTrackIndex){
   }
 }
 
+// ==============================================================================
+// functions for After Effects
+// ==============================================================================
+// =========================================================
+// retrieve shape data (for debugging)
+// =========================================================
 function retrieveShapeInfo()
 {
   var response = {
@@ -256,8 +276,9 @@ function retrieveShapeInfo()
   return "else";
 
 }
-
-
+// =========================================================
+// generate Shape layer of mouth based on passed json file.
+// =========================================================
 function generateKeyframefromTemplate(json){
   var obj = JSON.parse(json);
   // if (obj.lipdata === undefined)
@@ -493,6 +514,316 @@ function generateKeyframefromTemplate(json){
   return "done";
 }
 
+// =========================================================
+// Retrieve layers inside the selected composition.
+// =========================================================
+function retrieveCharacterArtsList()
+{
+  var response = {
+    "layers": []
+  };
+
+  // retrieve current selected layer
+  var comp = app.project.activeItem;
+  if (comp && (comp instanceof CompItem))
+  {
+    //alert("selection. name: " + comp.name + " id: " + comp.id + " comp.numLayers: " + comp.numLayers.toString());
+    var selectedLayers = comp.selectedLayers;
+    if (selectedLayers.length > 0) {
+      // treat first item as a composition for eyes
+      //alert(selectedLayers[0].name)
+      var eyeComp = selectedLayers[0].source;
+      if (eyeComp instanceof CompItem) {
+        response.compItemId = eyeComp.id;
+        for (var i = 1; i <= eyeComp.numLayers; ++i) {
+          // /*test*/
+          // if (i == 2) {
+          //   //app.project.items.addComp(name, width, height, pixelAspect, duration, frameRate)
+          //   var newComp = app.project.items.addComp("Eye Control Layer", 1000, 1450, 1, 10*60, 29.97);
+          //   eyeComp.layers.add(newComp);
+          //   eyeComp.layer(i).copyToComp(newComp);
+          // } // test
+          var layer = {
+            "layerIndex" : i,
+            "name" : eyeComp.layer(i).name
+          };
+          response.layers.push(layer);
+        }
+      } else {
+        alert("Please select a composition that contains eye layers.");
+        return '';
+      }
+    } else {
+      alert("Please select a composition that contains eye layers.");
+      return '';
+    }
+    return JSON.stringify(response);
+
+
+        //if (mainComp.layers[i].name === phones[j])
+  }
+  else {
+    alert("no composition selected!");
+  }
+
+
+  // var sequence = app.project.activeSequence;
+  // if (!sequence)
+  // {
+  //   return "";
+  // }
+
+  // var response = {
+  //   "audioTracks" : [],
+  //   "videoTracks" : []
+  // };
+
+  // for (var i = 0; i < sequence.videoTracks.numTracks; ++i)
+  // {
+  //   var track = {
+  //     "name" : sequence.videoTracks[i].name,
+  //     "trackIndex" : i
+  //   };
+  //   response.videoTracks.push(track);
+  // }
+
+  // for (var i = 0; i < sequence.audioTracks.numTracks; ++i)
+  // {
+  //   var track = {
+  //     "name" : sequence.audioTracks[i].name,
+  //     "trackIndex" : i
+  //   };
+  //   response.audioTracks.push(track);
+  // }
+
+  // return JSON.stringify(response);
+  //return "Hola!";
+}
+
+function generateCharacterOutputLayer(json)
+{
+  // var json = {
+  //   "config" : {
+  //     "comp" : {
+  //       "frameRate" : 29.97,
+  //       "duration" : 10*60
+  //     },
+  //     "blinking" : {
+  //       "enabled" : true,
+  //       "targetCompItemId" : 2123,
+  //       "maximumOpenEyeDuration" : 3000,
+  //       "minimumOpenEyeDuration" : 2000,
+  //       "totalClosedEyeDuration" : 150,
+  //       "randomize" : true,
+  //       "eyeOpen" : 2,
+  //       "eyeClosed" : [3]
+  //     }
+  //   }
+  // };
+
+  // Create Compositions for Output
+  var obj = JSON.parse(json);
+  var comp = app.project.activeItem;
+  if (comp && (comp instanceof CompItem)) {
+    var folder = app.project.items.addFolder('LTT-CharacterArtOutput');
+    var parentComp = folder.items.addComp('LTT-CharacterArt', 1000, 1450, 1, 10 * 60, obj.config.comp.frameRate);
+    comp.layers.add(parentComp);
+
+    for (var i = 3; i <= comp.numLayers; ++i) {
+      var childComp = folder.items.addComp('LTT-' + comp.layer(i).name, 1000, 1450, 1, 10 * 60, obj.config.comp.frameRate);
+      var addedLayer = parentComp.layers.add(childComp);
+      addedLayer.moveToEnd();
+    }
+
+
+    // Find Control Layer
+    var controlLayer = null;
+    for (var i = 1; i <= comp.numLayers; ++i) {
+      if (comp.layer(i).name.indexOf('LTT-control') > -1) {
+        controlLayer = comp.layer(i);
+        break;
+      }
+    }
+
+    if (controlLayer !== null) {
+      //alert("numProperties: " + controlLayer.Effects.numProperties);
+      //alert("name: " + controlLayer.effect(1).property(1).name);
+      for (var i = 1; i <= controlLayer.Effects.numProperties; ++i) {
+        var menuProperty = controlLayer.effect(i).property(1);
+        // select source comp
+        var sourceComp = comp.layer(i + 2).source; // take control and output layer into account
+        var isEyeLayer = sourceComp.id === obj.config.blinking.targetCompItemId;
+        //alert("menuProperty.name: " + menuProperty.name);
+        var previousKeyLayer = null;
+        //alert("menuProperty.numKeys: " + menuProperty.numKeys);
+        for (var j = 1; j <= menuProperty.numKeys; ++j) {
+          var destComp = parentComp.layer(i).source;
+          var layerNumber = menuProperty.keyValue(j);
+          
+          //alert("layerNumber: " + layerNumber);
+          var time = 0.0;
+          if (previousKeyLayer !== null) {
+            //previousKeyLayer.outPoint = menuProperty.keyTime(j);
+            time = menuProperty.keyTime(j);
+          }
+
+          if (layerNumber > 1) { // "----" is not selected
+            sourceComp.layer(layerNumber - 1).copyToComp(destComp); //take default "----" into account
+            var currentKeyLayer = destComp.layer(1);
+            currentKeyLayer.moveToEnd(); // For correct ordering.
+            
+            currentKeyLayer.startTime = menuProperty.keyTime(j);
+            currentKeyLayer.enabled = true;
+            previousKeyLayer = currentKeyLayer;
+
+            if (j < menuProperty.numKeys) {
+              // if (i === 2 && j === 1) {
+              //   alert("keyTime: " + menuProperty.keyTime(j + 1));
+              // }
+              currentKeyLayer.outPoint = menuProperty.keyTime(j + 1);
+            }
+
+          } else if (layerNumber === 1 && isEyeLayer) {
+            // Eyelayer with blinking
+            var max = obj.config.blinking.maximumOpenEyeDuration / 1000;
+            var min = obj.config.blinking.minimumOpenEyeDuration / 1000;
+            var blinking = obj.config.blinking;
+
+            var nextKeyTime = obj.config.comp.duration;
+            //alert("duration: " + obj.config.comp.duration);
+            if (j < menuProperty.numKeys) {
+              nextKeyTime = menuProperty.keyTime(j + 1);
+            }
+            time = menuProperty.keyTime(j);
+            var timeExceedsNextKeyFrame = false;
+            while (!timeExceedsNextKeyFrame) {
+              // add Open eye layer
+              sourceComp.layer(blinking.eyeOpen).copyToComp(destComp);
+              destComp.layer(1).startTime = time;
+              if (blinking.randomize) {
+                time += min + (max - min) * Math.random();
+              } else {
+                time += max;
+              }
+              if (time > nextKeyTime) {
+                time = nextKeyTime;
+                timeExceedsNextKeyFrame = true;
+              }
+              destComp.layer(1).outPoint = time;
+              destComp.layer(1).enabled = true;
+              previousKeyLayer = destComp.layer(1);
+              // add Closed eye layer
+              for (var k = 0; !timeExceedsNextKeyFrame && k < blinking.eyeClosed.length; ++k) {
+                sourceComp.layer(blinking.eyeClosed[k]).copyToComp(destComp);
+                destComp.layer(1).startTime = time;
+                time += blinking.totalClosedEyeDuration / 1000 / blinking.eyeClosed.length;
+                if (time > nextKeyTime) {
+                  time = nextKeyTime;
+                  timeExceedsNextKeyFrame = true;
+                }
+                destComp.layer(1).outPoint = time;
+                destComp.layer(1).enabled = true;
+                previousKeyLayer = destComp.layer(1).enabled;
+              }
+            }
+
+          } else {
+
+          }
+        }
+        // if (previousKeyLayer !== null) {
+        //   previousKeyLayer.outPoint = obj.config.comp.duration;
+        // }
+        // //   if (comp.layer(i).name.indexOf('LTT-') === -1) {
+        // //     for ()
+        // //   }
+      }
+      //generateEyeControlLayer(json);
+    }
+  }
+
+  //generateDropdownMenu();
+  return "done";
+}
+
+function generateDropdownMenu() {
+  var comp = app.project.activeItem;
+  if (comp && (comp instanceof CompItem)) {
+    var controlLayer = comp.layers.addNull();
+    controlLayer.name = "LTT-control";
+    controlLayer.moveToBeginning();
+    controlLayer.enabled = false;
+
+    for (var i = 1; i <= comp.numLayers; ++i) {
+      //alert('layer name:' + comp.layer(i).name);
+      if (comp.layer(i).name.indexOf('LTT-') > -1) {
+        continue;
+      }
+      // Add dropdown Menu
+      var controlEffect = controlLayer.Effects.addProperty('ADBE Dropdown Control');
+      var targetComp = comp.layer(i).source;
+      var layerName = [];
+      layerName.push("----");
+      for (var j = 1; j <= targetComp.numLayers; ++j) {
+        layerName.push(targetComp.layer(j).name.toString("utf8"));
+      }
+      var property = controlEffect.property(1).setPropertyParameters(layerName);
+      property.propertyGroup(1).name = comp.layer(i).name.toString("utf8");
+
+    }
+  }
+}
+
+function generateEyeControlLayer(json) {
+  //alert(json);
+  var obj = JSON.parse(json);
+  //alert("parsing ok");
+  // validation
+  var eyeComp = app.project.itemByID(obj.config.blinking.targetCompItemId);
+  //alert(obj.config.blinking.targetCompItemId);
+  if (eyeComp && eyeComp instanceof CompItem) {
+    //alert("instanceof CompItem");
+    //app.project.items.addComp(name, width, height, pixelAspect, duration, frameRate)
+    var newComp = app.project.items.addComp("Eye Control Layer", 1000, 1450, 1, 10*60, obj.config.comp.frameRate);
+    eyeComp.layers.add(newComp);
+    
+    var time = 0;
+    var max = obj.config.blinking.maximumOpenEyeDuration / 1000;
+    var min = obj.config.blinking.minimumOpenEyeDuration / 1000;
+    var blinking = obj.config.blinking;
+    while (time <= obj.config.comp.duration) {
+      // add Open eye layer
+      eyeComp.layer(blinking.eyeOpen + 1).copyToComp(newComp); // +1 for "Eye Control Layer"
+      newComp.layer(1).startTime = time;
+      if (blinking.randomize) {
+        time += min + (max - min) * Math.random();
+      } else {
+        time += max;
+      }
+      newComp.layer(1).outPoint = time;
+      newComp.layer(1).enabled = true;
+
+      // add Closed eye layer
+      for (var i = 0; i < blinking.eyeClosed.length; ++i) {
+        eyeComp.layer(blinking.eyeClosed[i] + 1).copyToComp(newComp); // +1 for "Eye Control Layer"
+        newComp.layer(1).startTime = time;
+        time += blinking.totalClosedEyeDuration / 1000 / blinking.eyeClosed.length;
+        newComp.layer(1).outPoint = time;
+        newComp.layer(1).enabled = true;
+      }
+    }
+  } else {
+    alert("no comp selected!");
+  }
+}
+
+// ==============================================================================
+// Helper functions
+// ==============================================================================
+
+// =========================================================
+// Helper functions for After Effects
+// =========================================================
 function getShape(lip_layers, lipShapeName)
 {
   for (var i = 0; i < lip_layers.length; ++i)
@@ -537,7 +868,6 @@ function transientShapeRequired(previousVowel, currentVowel, nextVowel)
   }
   return false;
 }
-
 
 function getLipShapeGroup(lipShape)
 {

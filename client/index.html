@@ -18,24 +18,84 @@
         <textarea id="result-textarea" rows="10"></textarea>
     </fieldset>
     <fieldset id="aftereffects-fieldset">
-        <legend>リップシンクアニメーションの生成</legend>
-        <p>Windows アプリで結合したタイミング情報のjsonファイルからアニメーションのキーフレームを作成</p>
-        <label for="posterizationTime-text">タイミング情報結合後json:</label>
-        <textarea id="timing-textarea" rows="10"></textarea>
-        <fieldset>
-            <legend>オプション</legend>
+        <legend>立ち絵制御</legend>
+        <fieldset id="aftereffects-characterart">
+            <legend>立ち絵レイヤーの生成</legend>
+            <p>立ち絵レイヤー生成用の制御用レイヤーを生成</p>
+            <button id="retrieveCharacterLayerName-button">レイヤー名取得</button>
+            <button id="generateCharacterControlLayer-button">制御用レイヤー生成</button>
+            <!-- <button id="cleanUpCharacterControlLayers-button">制御用レイヤー消去</button> -->
             <fieldset>
-                <legend>ポスタリゼーション時間</legend>
-                <label for="posterizationTime-checkBox">有効にする</label>
-                <input type="checkbox" id="posterizationTime-checkBox" checked="checked">
-                <br>
-                <label for="posterizationTime-text">ポスタリゼーション時間</label>
-                <input type="text" id="posterizationTime-text" maxlength="2" value="15">
-            </fieldset>
+                <legend>オプション</legend>
+                <fieldset>
+                    <legend>瞬きの自動生成</legend>
+                    <label for="blinking-checkBox">有効にする</label>
+                    <input type="checkbox" id="blinking-checkBox" checked="checked"><br>
+                    <label for="blinking-enableRandomize-checkbok">瞬き間隔のランダマイズ</label>
+                    <input type="checkbox" id="blinking-enableRandomize-checkbok" checked="checked"><br>
+                    <label for="minimumOpenEyeDuration">目を開く時間 [msec]</label>
+                    <input type="text" id="minimumOpenEyeDuration" maxlength="5" value="2000" size="5">〜
+                    <input type="text" id="maximumOpenEyeDuration" maxlength="5" value="3000" size="5"><br>
+                    <label for="totalClosedEyeDuration">閉じる描画の合計時間 [msec]</label>
+                    <input type="text" id="totalClosedEyeDuration" maxlength="5" value="150" size="5">
 
+                    <p>
+                        <label for="eye-open">目開き</label>
+                        <select name="eye-open" id="eye-open">
+                            <!-- <option value="1">目開き</option>
+                            <option value="2">目やや閉じ</option>
+                            <option value="3">目ほぼ閉じ</option>
+                            <option value="4">目閉じ</option>
+                            <label for="eye-open">目開き</label> -->
+                        </select><br>
+                        <label for="eye-mostly-open">目やや閉じ</label>
+                        <select name="eye-mostly-open" id="eye-mostly-open">
+                            <!-- <option value="1">目開き</option>
+                            <option value="2">目やや閉じ</option>
+                            <option value="3">目ほぼ閉じ</option>
+                            <option value="4">目閉じ</option> -->
+                        </select><br>
+                        <label for="eye-bit-open">目ほぼ閉じ</label>
+                        <select name="eye-bit-open" id="eye-bit-open">
+                            <!-- <option value="1">目開き</option>
+                            <option value="2">目やや閉じ</option>
+                            <option value="3">目ほぼ閉じ</option>
+                            <option value="4">目閉じ</option> -->
+                        </select><br>
+                        <label for="eye-close">目閉じ</label>
+                        <select name="eye-close" id="eye-close">
+                            <!-- <option value="1">目開き</option>
+                            <option value="2">目やや閉じ</option>
+                            <option value="3">目ほぼ閉じ</option>
+                            <option value="4">目閉じ</option> -->
+                        </select>
+                    </p>
+                    <input type="text" id="compItemId" hidden>
+                </fieldset>
+            </fieldset>
+            <button id="generateCharacterOutputLayers-button">制御用レイヤーから立ち絵レイヤーを生成</button>
+            <!-- <button id="cleanUpCharacterControlLayers-button">立ち絵レイヤー消去</button> -->
         </fieldset>
-        <button id="generateKeyframe-button">キーフレーム生成</button>
-        <button id="retrieveShapeInfo-button">パス情報を取得</button>
+        <fieldset id="aftereffects-lipsync">
+            <legend>リップシンクアニメーションの生成</legend>
+            <p>Windows アプリで結合したタイミング情報のjsonファイルからアニメーションのキーフレームを作成</p>
+            <label for="posterizationTime-text">タイミング情報結合後json:</label>
+            <textarea id="timing-textarea" rows="10"></textarea>
+            <fieldset>
+                <legend>オプション</legend>
+                <fieldset>
+                    <legend>ポスタリゼーション時間</legend>
+                    <label for="posterizationTime-checkBox">有効にする</label>
+                    <input type="checkbox" id="posterizationTime-checkBox" checked="checked">
+                    <br>
+                    <label for="posterizationTime-text">ポスタリゼーション時間</label>
+                    <input type="text" id="posterizationTime-text" maxlength="2" value="15" size="5">
+                </fieldset>
+
+            </fieldset>
+            <button id="generateKeyframe-button">キーフレーム生成</button>
+            <button id="retrieveShapeInfo-button">パス情報を取得</button>
+        </fieldset>
     </fieldset>
 
     <!-- <fieldset>
@@ -85,10 +145,7 @@
 
     <p></p>
     <br>
-    <br>
-    <br>
-    <br>
-    <button id="reload-button">Reload</button>
+    <button id="reload-button">パネル再読み込み（デバッグ用）</button>
 
     <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
     <script type="text/javascript" src="CSInterface.js"></script>
