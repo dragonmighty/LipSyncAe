@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@types/node": "^18.7.20",
+    "csinterface-ts": "^1.0.3",
+    "types-for-adobe": "^7.0.6"
+  }
+}

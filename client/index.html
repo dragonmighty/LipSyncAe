@@ -4,6 +4,11 @@
     <meta charset="utf-8">
     <title>Add Control Layer</title>
     <link rel="stylesheet" href="style.css">
+    <script>var exports = {};</script>
+    <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
+    <script type="text/javascript" src="CSInterface.js" defer></script>
+    <!-- <script type="text/javascript" src="labparser.js"></script> -->
+    <script type="text/javascript" src="index.js" defer></script>
 </head>
 <body onload="onLoad()">
     <!-- 1) Simple HTML UI elements to get us started -->
@@ -42,32 +47,15 @@
                     <p>
                         <label for="eye-open">目開き</label>
                         <select name="eye-open" id="eye-open">
-                            <!-- <option value="1">目開き</option>
-                            <option value="2">目やや閉じ</option>
-                            <option value="3">目ほぼ閉じ</option>
-                            <option value="4">目閉じ</option>
-                            <label for="eye-open">目開き</label> -->
                         </select><br>
                         <label for="eye-mostly-open">目やや閉じ</label>
                         <select name="eye-mostly-open" id="eye-mostly-open">
-                            <!-- <option value="1">目開き</option>
-                            <option value="2">目やや閉じ</option>
-                            <option value="3">目ほぼ閉じ</option>
-                            <option value="4">目閉じ</option> -->
                         </select><br>
                         <label for="eye-bit-open">目ほぼ閉じ</label>
                         <select name="eye-bit-open" id="eye-bit-open">
-                            <!-- <option value="1">目開き</option>
-                            <option value="2">目やや閉じ</option>
-                            <option value="3">目ほぼ閉じ</option>
-                            <option value="4">目閉じ</option> -->
                         </select><br>
                         <label for="eye-close">目閉じ</label>
                         <select name="eye-close" id="eye-close">
-                            <!-- <option value="1">目開き</option>
-                            <option value="2">目やや閉じ</option>
-                            <option value="3">目ほぼ閉じ</option>
-                            <option value="4">目閉じ</option> -->
                         </select>
                     </p>
                     <input type="text" id="compItemId" hidden>
@@ -97,58 +85,9 @@
             <button id="retrieveShapeInfo-button">パス情報を取得</button>
         </fieldset>
     </fieldset>
-
-    <!-- <fieldset>
-        <legend>1: 立ち絵インポート</legend>
-        <label for="inputfile">立ち絵ファイル:</label>
-        <input type="file" id="inputfile"> 
-    </fieldset>
-    <fieldset>       
-        <legend>2: 設定</legend>
-        <input type="text" id="character-comp" name="character-comp" value="SDさとうささら_立ち絵" readonly>
-        <button id="load-settings">既存設定読み込み</button><br>
-        <input type="checkbox" id="chk-generate-lipsync" name="chk-generate-lipsync">
-        <label for="chk-generate-lipsync">リップシンクのレイヤーを作成</label><br>
-        
-        <label for="mouth-layer">口のレイヤー:</label>
-        <select name="mouth-layer" id="mouth-layer">
-            <option value="1">口</option>
-            <option value="2">髪型</option>
-            <option value="3">目</option>
-            <option value="4">眉毛</option>
-            <option value="5">服装</option>
-            <option value="6">小物</option>
-        </select><br>
-        <label for="mouth-layer">閉じた口:</label>
-        <select name="mouth-layer" id="mouth-layer">
-            <option value="1">layer 1</option>
-            <option value="2">layer 1</option>
-            <option value="3">layer 1</option>
-            <option value="4">layer 1</option>
-            <option value="5">layer 1</option>
-            <option value="6">layer 1</option>
-        </select><br>
-        <label for="mouth-layer">開いた口:</label>
-        <select name="mouth-layer" id="mouth-layer">
-            <option value="1">layer 1</option>
-            <option value="2">layer 1</option>
-            <option value="3">layer 1</option>
-            <option value="4">layer 1</option>
-            <option value="5">layer 1</option>
-            <option value="6">layer 1</option>
-        </select>
-        <button id="addctl-button">更新</button>
-    </fieldset> -->
-
-    <!-- 2) A button -->
-    <!-- <button id="addctl-button">生成</button> -->
-
     <p></p>
     <br>
     <button id="reload-button">パネル再読み込み（デバッグ用）</button>
 
-    <!-- 3) Add your script dependencies here, including CEP's CSInterface.js library -->
-    <script type="text/javascript" src="CSInterface.js"></script>
-    <script type="text/javascript" src="index.js"></script>
 </body>
 </html>
